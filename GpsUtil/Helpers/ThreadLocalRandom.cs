@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GpsUtil.Helpers;
+﻿namespace GpsUtil.Helpers;
 
 internal static class ThreadLocalRandom
 {
@@ -22,4 +16,3 @@ internal static class ThreadLocalRandom
         return Current.Next(minValue, maxValue);
     }
 }
-

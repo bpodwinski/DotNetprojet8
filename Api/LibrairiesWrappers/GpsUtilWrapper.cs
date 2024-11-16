@@ -1,24 +1,18 @@
 ﻿using GpsUtil.Location;
 using TourGuide.LibrairiesWrappers.Interfaces;
 
-namespace TourGuide.LibrairiesWrappers;
-
-public class GpsUtilWrapper : IGpsUtil
+namespace TourGuide.LibrairiesWrappers
 {
-    private readonly GpsUtil.GpsUtil _gpsUtil;
-
-    public GpsUtilWrapper()
+    public class GpsUtilWrapper : IGpsUtil
     {
-        _gpsUtil = new();
-    }
+        public async Task<VisitedLocation> GetUserLocationAsync(Guid userId)
+        {
+            return await GpsUtil.GpsUtil.GetUserLocationAsync(userId);
+        }
 
-    public VisitedLocation GetUserLocation(Guid userId)
-    {
-        return _gpsUtil.GetUserLocation(userId);
-    }
-
-    public List<Attraction> GetAttractions()
-    {
-        return _gpsUtil.GetAttractions();
+        public async Task<List<Attraction>> GetAttractionsAsync()
+        {
+            return await GpsUtil.GpsUtil.GetAttractionsAsync();
+        }
     }
 }

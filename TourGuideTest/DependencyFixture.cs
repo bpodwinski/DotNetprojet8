@@ -11,20 +11,21 @@ namespace TourGuideTest
     {
         public DependencyFixture()
         {
-            Initialize();            
+            Task.Run(() => InitializeAsync()).GetAwaiter().GetResult();
         }
 
-        public void Cleanup()
-        {           
-            Initialize();
+        public async Task CleanupAsync()
+        {
+            await InitializeAsync();
         }
 
-        public void Initialize(int internalUserNumber = 100)
+        public async Task InitializeAsync(int internalUserNumber = 100)
         {
             var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
             });
+
             var tourGuideLogger = loggerFactory.CreateLogger<TourGuideService>();
 
             InternalTestHelper.SetInternalUserNumber(internalUserNumber);
@@ -33,6 +34,8 @@ namespace TourGuideTest
             GpsUtil = new GpsUtilWrapper();
             RewardsService = new RewardsService(GpsUtil, RewardCentral);
             TourGuideService = new TourGuideService(tourGuideLogger, GpsUtil, RewardsService, loggerFactory);
+
+            await Task.CompletedTask; // Placeholder si une logique asynchrone est nécessaire à l'avenir
         }
 
         public IRewardCentral RewardCentral { get; set; }

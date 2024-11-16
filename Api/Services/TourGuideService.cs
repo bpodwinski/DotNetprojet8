@@ -42,55 +42,84 @@ public class TourGuideService : ITourGuideService
         AddShutDownHook();
     }
 
-    public List<UserReward> GetUserRewards(User user)
+    public async Task<List<UserReward>> GetUserRewardsAsync(User user)
     {
-        return user.UserRewards;
+        if (user == null) throw new ArgumentNullException(nameof(user));
+        return await Task.FromResult(user.UserRewards);
     }
 
-    public VisitedLocation GetUserLocation(User user)
+    public async Task<VisitedLocation> GetUserLocationAsync(User user)
     {
-        return user.VisitedLocations.Any() ? user.GetLastVisitedLocation() : TrackUserLocation(user);
+        if (user == null) throw new ArgumentNullException(nameof(user));
+
+        if (user.VisitedLocations.Any())
+        {
+            return await Task.FromResult(user.GetLastVisitedLocation());
+        }
+
+        return await TrackUserLocationAsync(user);
     }
 
-    public User GetUser(string userName)
+    public async Task<User> GetUserAsync(string userName)
     {
-        return _internalUserMap.ContainsKey(userName) ? _internalUserMap[userName] : null;
+        if (string.IsNullOrEmpty(userName)) throw new ArgumentException("UserName cannot be null or empty.");
+        return await Task.FromResult(_internalUserMap.ContainsKey(userName) ? _internalUserMap[userName] : null);
     }
 
-    public List<User> GetAllUsers()
+    public async Task<List<User>> GetAllUsersAsync()
     {
-        return _internalUserMap.Values.ToList();
+        return await Task.FromResult(_internalUserMap.Values.ToList());
     }
 
-    public void AddUser(User user)
+    public async Task AddUserAsync(User user)
     {
+        if (user == null) throw new ArgumentNullException(nameof(user));
+
         if (!_internalUserMap.ContainsKey(user.UserName))
         {
             _internalUserMap.Add(user.UserName, user);
         }
+
+        await Task.CompletedTask;
     }
 
-    public List<Provider> GetTripDeals(User user)
+    public async Task<List<Provider>> GetTripDealsAsync(User user)
     {
+        if (user == null) throw new ArgumentNullException(nameof(user));
+
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
-        List<Provider> providers = _tripPricer.GetPrice(TripPricerApiKey, user.UserId,
-            user.UserPreferences.NumberOfAdults, user.UserPreferences.NumberOfChildren,
-            user.UserPreferences.TripDuration, cumulativeRewardPoints);
+
+        var providers = await Task.Run(() =>
+            _tripPricer.GetPrice(
+                TripPricerApiKey,
+                user.UserId,
+                user.UserPreferences.NumberOfAdults,
+                user.UserPreferences.NumberOfChildren,
+                user.UserPreferences.TripDuration,
+                cumulativeRewardPoints)
+        );
+
         user.TripDeals = providers;
         return providers;
     }
 
-    public VisitedLocation TrackUserLocation(User user)
+    public async Task<VisitedLocation> TrackUserLocationAsync(User user)
     {
-        VisitedLocation visitedLocation = _gpsUtil.GetUserLocation(user.UserId);
+        if (user == null) throw new ArgumentNullException(nameof(user));
+
+        var visitedLocation = await _gpsUtil.GetUserLocationAsync(user.UserId);
         user.AddToVisitedLocations(visitedLocation);
-        _rewardsService.CalculateRewards(user);
+        await _rewardsService.CalculateRewardsAsync(user);
         return visitedLocation;
     }
 
-    public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
+    public async Task<List<Attraction>> GetNearByAttractionsAsync(VisitedLocation visitedLocation)
     {
-        return _gpsUtil.GetAttractions()
+        if (visitedLocation == null) throw new ArgumentNullException(nameof(visitedLocation));
+
+        var attractions = await _gpsUtil.GetAttractionsAsync();
+
+        return attractions
             .Select(attraction => new
             {
                 Attraction = attraction,
@@ -135,20 +164,20 @@ public class TourGuideService : ITourGuideService
         }
     }
 
-    private static readonly Random random = new Random();
+    private static readonly Random random = new();
 
     private double GenerateRandomLongitude()
     {
-        return new Random().NextDouble() * (180 - (-180)) + (-180);
+        return random.NextDouble() * (180 - (-180)) + (-180);
     }
 
     private double GenerateRandomLatitude()
     {
-        return new Random().NextDouble() * (90 - (-90)) + (-90);
+        return random.NextDouble() * (90 - (-90)) + (-90);
     }
 
     private DateTime GetRandomTime()
     {
-        return DateTime.UtcNow.AddDays(-new Random().Next(30));
+        return DateTime.UtcNow.AddDays(-random.Next(30));
     }
 }

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TripPricer.Helpers;
-
+﻿namespace TripPricer.Helpers;
 internal static class ThreadLocalRandom
 {
     private static readonly ThreadLocal<Random> threadLocal = new ThreadLocal<Random>(() => new Random());
@@ -22,4 +15,3 @@ internal static class ThreadLocalRandom
         return Current.Next(minValue, maxValue);
     }
 }
-

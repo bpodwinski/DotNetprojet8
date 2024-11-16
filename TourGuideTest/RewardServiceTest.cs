@@ -1,54 +1,59 @@
 ﻿using GpsUtil.Location;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TourGuide.Users;
-using TourGuide.Utilities;
 
-namespace TourGuideTest;
-
-public class RewardServiceTest : IClassFixture<DependencyFixture>
+namespace TourGuideTest
 {
-    private readonly DependencyFixture _fixture;
-
-    public RewardServiceTest(DependencyFixture fixture)
+    public class RewardServiceTest : IClassFixture<DependencyFixture>
     {
-        _fixture = fixture;
-    }
+        private readonly DependencyFixture _fixture;
 
-    [Fact]
-    public void UserGetRewards()
-    {
-        _fixture.Initialize(0);
-        var user = new User(Guid.NewGuid(), "jon", "000", "jon@tourGuide.com");
-        var attraction = _fixture.GpsUtil.GetAttractions().First();
-        user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));
-        _fixture.TourGuideService.TrackUserLocation(user);
-        var userRewards = user.UserRewards;
-        _fixture.TourGuideService.Tracker.StopTracking();
-        Assert.True(userRewards.Count == 1);
-    }
+        public RewardServiceTest(DependencyFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
-    [Fact]
-    public void IsWithinAttractionProximity()
-    {
-        var attraction = _fixture.GpsUtil.GetAttractions().First();
-        Assert.True(_fixture.RewardsService.IsWithinAttractionProximity(attraction, attraction));
-    }
+        [Fact]
+        public async Task UserGetRewardsAsync()
+        {
+            await _fixture.InitializeAsync(0);
+            var user = new User(Guid.NewGuid(), "jon", "000", "jon@tourGuide.com");
 
-    [Fact]
-    public void NearAllAttractions()
-    {
-        _fixture.Initialize(1);
-        _fixture.RewardsService.SetProximityBuffer(int.MaxValue);
+            var attraction = (await _fixture.GpsUtil.GetAttractionsAsync()).First();
+            user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));
 
-        var user = _fixture.TourGuideService.GetAllUsers().First();
-        _fixture.RewardsService.CalculateRewards(user);
-        var userRewards = _fixture.TourGuideService.GetUserRewards(user);
-        _fixture.TourGuideService.Tracker.StopTracking();
+            await _fixture.TourGuideService.TrackUserLocationAsync(user);
 
-        Assert.Equal(_fixture.GpsUtil.GetAttractions().Count, userRewards.Count);
+            var userRewards = user.UserRewards;
+            _fixture.TourGuideService.Tracker.StopTracking();
+
+            Assert.True(userRewards.Count == 1);
+        }
+
+        [Fact]
+        public async Task IsWithinAttractionProximityAsync()
+        {
+            var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
+            var attraction = attractions.First();
+
+            Assert.True(_fixture.RewardsService.IsWithinAttractionProximity(attraction, attraction));
+        }
+
+        [Fact]
+        public async Task NearAllAttractionsAsync()
+        {
+            await _fixture.InitializeAsync(1);
+            _fixture.RewardsService.SetProximityBuffer(int.MaxValue);
+
+            var users = await _fixture.TourGuideService.GetAllUsersAsync();
+            var user = users.First();
+
+            await _fixture.RewardsService.CalculateRewardsAsync(user);
+
+            var userRewards = await _fixture.TourGuideService.GetUserRewardsAsync(user);
+            _fixture.TourGuideService.Tracker.StopTracking();
+
+            var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
+            Assert.Equal(attractions.Count, userRewards.Count);
+        }
     }
 }

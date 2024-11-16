@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using TourGuide.Services;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
 
@@ -14,44 +13,53 @@ public class Tracker
 
     public Tracker(ITourGuideService tourGuideService, ILogger<Tracker> logger)
     {
-        _tourGuideService = tourGuideService;
-        _logger = logger;
-        Task.Run(() => Run(), _cancellationTokenSource.Token);
+        _tourGuideService = tourGuideService ?? throw new ArgumentNullException(nameof(tourGuideService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // Lance le traqueur
+        Task.Run(() => RunAsync(), _cancellationTokenSource.Token);
     }
 
-    // Assures to shut down the Tracker thread
+    // Assure l'arrêt du suivi
     public void StopTracking()
     {
         _cancellationTokenSource.Cancel();
     }
 
-    public async Task Run()
+    private async Task RunAsync()
     {
         var stopwatch = new Stopwatch();
 
         while (!_cancellationTokenSource.Token.IsCancellationRequested)
         {
-            List<User> users = _tourGuideService.GetAllUsers();
-            _logger.LogDebug($"Begin Tracker. Tracking {users.Count} users.");
-
-            stopwatch.Start();
-
-            users.ForEach(u => _tourGuideService.TrackUserLocation(u));
-
-            stopwatch.Stop();
-
-            _logger.LogDebug($"Tracker Time Elapsed: {stopwatch.ElapsedMilliseconds / 1000.0} seconds.");
-
-            stopwatch.Reset();
-
             try
             {
+                // Récupère tous les utilisateurs de manière asynchrone
+                var users = await _tourGuideService.GetAllUsersAsync();
+                _logger.LogDebug($"Begin Tracker. Tracking {users.Count} users.");
+
+                stopwatch.Start();
+
+                // Suit la localisation des utilisateurs de manière asynchrone
+                var trackTasks = users.Select(user => _tourGuideService.TrackUserLocationAsync(user));
+                await Task.WhenAll(trackTasks);
+
+                stopwatch.Stop();
+
+                _logger.LogDebug($"Tracker Time Elapsed: {stopwatch.ElapsedMilliseconds / 1000.0} seconds.");
+
+                stopwatch.Reset();
+
                 _logger.LogDebug("Tracker sleeping");
                 await Task.Delay(TrackingPollingInterval, _cancellationTokenSource.Token);
             }
             catch (TaskCanceledException)
             {
-                break;
+                break; // Sort de la boucle si l'annulation est demandée
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Tracker encountered an error: {ex.Message}");
             }
         }
 

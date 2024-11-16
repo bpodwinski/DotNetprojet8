@@ -11,16 +11,27 @@ namespace TourGuide.Controllers;
 public class TourGuideController : ControllerBase
 {
     private readonly ITourGuideService _tourGuideService;
+    private readonly IRewardsService _rewardsService;
 
-    public TourGuideController(ITourGuideService tourGuideService)
+    public TourGuideController(
+        ITourGuideService tourGuideService,
+        IRewardsService rewardsService
+    )
     {
         _tourGuideService = tourGuideService;
+        _rewardsService = rewardsService;
     }
 
     [HttpGet("getLocation")]
-    public ActionResult<VisitedLocation> GetLocation([FromQuery] string userName)
+    public async Task<ActionResult<VisitedLocation>> GetLocationAsync([FromQuery] string userName)
     {
-        var location = _tourGuideService.GetUserLocation(GetUser(userName));
+        var user = await GetUserAsync(userName);
+        if (user == null)
+        {
+            return NotFound($"User with username '{userName}' not found.");
+        }
+
+        var location = await _tourGuideService.GetUserLocationAsync(user);
         return Ok(location);
     }
 
@@ -34,29 +45,70 @@ public class TourGuideController : ControllerBase
     // The reward points for visiting each Attraction.
     //    Note: Attraction reward points can be gathered from RewardsCentral
     [HttpGet("getNearbyAttractions")]
-    public ActionResult<List<Attraction>> GetNearbyAttractions([FromQuery] string userName)
+    public async Task<ActionResult<List<object>>> GetNearbyAttractionsAsync([FromQuery] string userName)
     {
-        var visitedLocation = _tourGuideService.GetUserLocation(GetUser(userName));
-        var attractions = _tourGuideService.GetNearByAttractions(visitedLocation);
-        return Ok(attractions);
+        // Récupération de l'utilisateur
+        var user = await GetUserAsync(userName);
+        if (user == null)
+        {
+            return NotFound($"User with username '{userName}' not found.");
+        }
+
+        // Récupération de la localisation de l'utilisateur
+        var visitedLocation = await _tourGuideService.GetUserLocationAsync(user);
+
+        // Récupération des attractions
+        var attractions = await _tourGuideService.GetNearByAttractionsAsync(visitedLocation);
+
+        // Calcul des 5 attractions les plus proches
+        var closestAttractions = attractions
+            .Select(attraction => new
+            {
+                AttractionName = attraction.AttractionName,
+                AttractionLatitude = attraction.Latitude,
+                AttractionLongitude = attraction.Longitude,
+                UserLatitude = visitedLocation.Location.Latitude,
+                UserLongitude = visitedLocation.Location.Longitude,
+                DistanceInMiles = _rewardsService.GetDistance(
+                    new Locations(attraction.Latitude, attraction.Longitude),
+                    visitedLocation.Location),
+                RewardPoints = _rewardsService.GetRewardPointsAsync(attraction, user) // Méthode synchrone ou remplacez par async si nécessaire
+            })
+            .OrderBy(attraction => attraction.DistanceInMiles) // Trie par distance
+            .Take(5) // Prend les 5 plus proches
+            .ToList();
+
+        return Ok(closestAttractions);
     }
 
     [HttpGet("getRewards")]
-    public ActionResult<List<UserReward>> GetRewards([FromQuery] string userName)
+    public async Task<ActionResult<List<UserReward>>> GetRewardsAsync([FromQuery] string userName)
     {
-        var rewards = _tourGuideService.GetUserRewards(GetUser(userName));
+        var user = await GetUserAsync(userName);
+        if (user == null)
+        {
+            return NotFound($"User with username '{userName}' not found.");
+        }
+
+        var rewards = await _tourGuideService.GetUserRewardsAsync(user);
         return Ok(rewards);
     }
 
     [HttpGet("getTripDeals")]
-    public ActionResult<List<Provider>> GetTripDeals([FromQuery] string userName)
+    public async Task<ActionResult<List<Provider>>> GetTripDealsAsync([FromQuery] string userName)
     {
-        var deals = _tourGuideService.GetTripDeals(GetUser(userName));
+        var user = await GetUserAsync(userName);
+        if (user == null)
+        {
+            return NotFound($"User with username '{userName}' not found.");
+        }
+
+        var deals = await _tourGuideService.GetTripDealsAsync(user);
         return Ok(deals);
     }
 
-    private User GetUser(string userName)
+    private async Task<User> GetUserAsync(string userName)
     {
-        return _tourGuideService.GetUser(userName);
+        return await _tourGuideService.GetUserAsync(userName);
     }
 }
