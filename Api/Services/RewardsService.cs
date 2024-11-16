@@ -35,22 +35,26 @@ public class RewardsService : IRewardsService
     public void CalculateRewards(User user)
     {
         count++;
-        List<VisitedLocation> userLocations = user.VisitedLocations;
-        List<Attraction> attractions = _gpsUtil.GetAttractions();
+        var rewardedAttractions = new HashSet<string>(
+            user.UserRewards.Select(r => r.Attraction.AttractionName));
+        var userLocationsSnapshot = user.VisitedLocations.ToList();
+        var attractionsSnapshot = _gpsUtil.GetAttractions().ToList();
 
-        foreach (var visitedLocation in userLocations)
+        Parallel.ForEach(userLocationsSnapshot, visitedLocation =>
         {
-            foreach (var attraction in attractions)
+            var nearbyAttractions = attractionsSnapshot
+                .Where(attraction => !rewardedAttractions.Contains(attraction.AttractionName) &&
+                                     NearAttraction(visitedLocation, attraction));
+
+            foreach (var attraction in nearbyAttractions)
             {
-                if (!user.UserRewards.Any(r => r.Attraction.AttractionName == attraction.AttractionName))
+                lock (user.UserRewards)
                 {
-                    if (NearAttraction(visitedLocation, attraction))
-                    {
-                        user.AddUserReward(new UserReward(visitedLocation, attraction, GetRewardPoints(attraction, user)));
-                    }
+                    user.AddUserReward(new UserReward(visitedLocation, attraction, GetRewardPoints(attraction, user)));
+                    rewardedAttractions.Add(attraction.AttractionName);
                 }
             }
-        }
+        });
     }
 
     public bool IsWithinAttractionProximity(Attraction attraction, Locations location)

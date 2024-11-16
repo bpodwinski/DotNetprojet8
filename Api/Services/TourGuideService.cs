@@ -1,6 +1,4 @@
 ﻿using GpsUtil.Location;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using System.Globalization;
 using TourGuide.LibrairiesWrappers.Interfaces;
 using TourGuide.Services.Interfaces;
@@ -92,16 +90,16 @@ public class TourGuideService : ITourGuideService
 
     public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
     {
-        List<Attraction> nearbyAttractions = new ();
-        foreach (var attraction in _gpsUtil.GetAttractions())
-        {
-            if (_rewardsService.IsWithinAttractionProximity(attraction, visitedLocation.Location))
+        return _gpsUtil.GetAttractions()
+            .Select(attraction => new
             {
-                nearbyAttractions.Add(attraction);
-            }
-        }
-
-        return nearbyAttractions;
+                Attraction = attraction,
+                Distance = _rewardsService.GetDistance(attraction, visitedLocation.Location)
+            })
+            .OrderBy(a => a.Distance)
+            .Take(5)
+            .Select(a => a.Attraction)
+            .ToList();
     }
 
     private void AddShutDownHook()
