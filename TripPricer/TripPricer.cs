@@ -1,9 +1,11 @@
-﻿using TripPricer.Helpers;
+﻿using System.Runtime.CompilerServices;
+using TripPricer.Helpers;
 
 namespace TripPricer;
 
 public class TripPricer
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<List<Provider>> GetPriceAsync(string apiKey, Guid attractionId, int adults, int children, int nightsStay, int rewardsPoints)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -39,9 +41,7 @@ public class TripPricer
         return providers;
     }
 
-    /// <summary>
-    /// Generates a provider name based on a random value.
-    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetProviderName(string apiKey, int adults)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
