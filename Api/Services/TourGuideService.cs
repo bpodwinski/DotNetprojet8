@@ -1,5 +1,6 @@
 ﻿using GpsUtil.Location;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using TourGuide.LibrairiesWrappers.Interfaces;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
@@ -19,6 +20,7 @@ public class TourGuideService : ITourGuideService
     private const string TripPricerApiKey = "test-server-api-key";
     private bool _testMode = true;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TourGuideService(ILogger<TourGuideService> logger, IGpsUtil gpsUtil, IRewardsService rewardsService, ILoggerFactory loggerFactory)
     {
         _logger = logger;
@@ -42,35 +44,39 @@ public class TourGuideService : ITourGuideService
         AddShutDownHook();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<List<UserReward>> GetUserRewardsAsync(User user)
     {
         if (user == null) throw new ArgumentNullException(nameof(user));
-        return await Task.FromResult(user.UserRewards);
+
+        return user.UserRewards;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<VisitedLocation> GetUserLocationAsync(User user)
     {
         if (user == null) throw new ArgumentNullException(nameof(user));
 
-        if (user.VisitedLocations.Any())
-        {
-            return await Task.FromResult(user.GetLastVisitedLocation());
-        }
-
-        return await TrackUserLocationAsync(user);
+        return user.VisitedLocations.Any() ? user.GetLastVisitedLocation() : await TrackUserLocationAsync(user);
     }
 
-    public async Task<User> GetUserAsync(string userName)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Task<User> GetUserAsync(string userName)
     {
         if (string.IsNullOrEmpty(userName)) throw new ArgumentException("UserName cannot be null or empty.");
-        return await Task.FromResult(_internalUserMap.ContainsKey(userName) ? _internalUserMap[userName] : null);
+
+        _internalUserMap.TryGetValue(userName, out var user);
+        return Task.FromResult(user);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<List<User>> GetAllUsersAsync()
     {
+
         return await Task.FromResult(_internalUserMap.Values.ToList());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task AddUserAsync(User user)
     {
         if (user == null) throw new ArgumentNullException(nameof(user));
@@ -83,6 +89,7 @@ public class TourGuideService : ITourGuideService
         await Task.CompletedTask;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<List<Provider>> GetTripDealsAsync(User user)
     {
         if (user == null) throw new ArgumentNullException(nameof(user));
@@ -90,7 +97,7 @@ public class TourGuideService : ITourGuideService
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
 
         var providers = await Task.Run(() =>
-            _tripPricer.GetPrice(
+            _tripPricer.GetPriceAsync(
                 TripPricerApiKey,
                 user.UserId,
                 user.UserPreferences.NumberOfAdults,
@@ -103,6 +110,7 @@ public class TourGuideService : ITourGuideService
         return providers;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<VisitedLocation> TrackUserLocationAsync(User user)
     {
         if (user == null) throw new ArgumentNullException(nameof(user));
@@ -113,6 +121,7 @@ public class TourGuideService : ITourGuideService
         return visitedLocation;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<List<Attraction>> GetNearByAttractionsAsync(VisitedLocation visitedLocation)
     {
         if (visitedLocation == null) throw new ArgumentNullException(nameof(visitedLocation));
@@ -120,6 +129,7 @@ public class TourGuideService : ITourGuideService
         var attractions = await _gpsUtil.GetAttractionsAsync();
 
         return attractions
+            .AsParallel()
             .Select(attraction => new
             {
                 Attraction = attraction,
@@ -131,6 +141,7 @@ public class TourGuideService : ITourGuideService
             .ToList();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddShutDownHook()
     {
         AppDomain.CurrentDomain.ProcessExit += (sender, e) => Tracker.StopTracking();

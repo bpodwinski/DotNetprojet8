@@ -2,12 +2,22 @@
 
 public class RewardCentral
 {
-    public int GetAttractionRewardPoints(Guid attractionId, Guid userId)
-    {
-        int randomDelay = new Random().Next(1, 1000);
-        Thread.Sleep(randomDelay);
+    private readonly bool _simulateLatency;
 
-        int randomInt = new Random().Next(1, 1000);
+    public RewardCentral(bool simulateLatency = true)
+    {
+        _simulateLatency = simulateLatency;
+    }
+
+    public async Task<int> GetAttractionRewardPointsAsync(Guid attractionId, Guid userId)
+    {
+        if (_simulateLatency)
+        {
+            int randomDelay = Random.Shared.Next(1, 1000);
+            await Task.Delay(randomDelay);
+        }
+
+        int randomInt = Random.Shared.Next(1, 1000);
         return randomInt;
     }
 }

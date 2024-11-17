@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
 
@@ -8,7 +9,7 @@ public class Tracker
 {
     private readonly ILogger<Tracker> _logger;
     private static readonly TimeSpan TrackingPollingInterval = TimeSpan.FromMinutes(5);
-    private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly ITourGuideService _tourGuideService;
 
     public Tracker(ITourGuideService tourGuideService, ILogger<Tracker> logger)
@@ -16,16 +17,16 @@ public class Tracker
         _tourGuideService = tourGuideService ?? throw new ArgumentNullException(nameof(tourGuideService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        // Lance le traqueur
+        // Start the tracking process in a background task
         Task.Run(() => RunAsync(), _cancellationTokenSource.Token);
     }
 
-    // Assure l'arrêt du suivi
     public void StopTracking()
     {
         _cancellationTokenSource.Cancel();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private async Task RunAsync()
     {
         var stopwatch = new Stopwatch();
@@ -34,35 +35,48 @@ public class Tracker
         {
             try
             {
-                // Récupère tous les utilisateurs de manière asynchrone
+                // Fetch all users asynchronously
                 var users = await _tourGuideService.GetAllUsersAsync();
                 _logger.LogDebug($"Begin Tracker. Tracking {users.Count} users.");
 
                 stopwatch.Start();
 
-                // Suit la localisation des utilisateurs de manière asynchrone
-                var trackTasks = users.Select(user => _tourGuideService.TrackUserLocationAsync(user));
+                // Track user locations concurrently
+                var trackTasks = users.Select(user => TrackUserLocationWithLoggingAsync(user));
                 await Task.WhenAll(trackTasks);
 
                 stopwatch.Stop();
-
                 _logger.LogDebug($"Tracker Time Elapsed: {stopwatch.ElapsedMilliseconds / 1000.0} seconds.");
 
                 stopwatch.Reset();
 
+                // Delay for the configured polling interval
                 _logger.LogDebug("Tracker sleeping");
                 await Task.Delay(TrackingPollingInterval, _cancellationTokenSource.Token);
             }
             catch (TaskCanceledException)
             {
-                break; // Sort de la boucle si l'annulation est demandée
+                _logger.LogInformation("Tracking canceled gracefully.");
+                break; // Exit the loop when cancellation is requested
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Tracker encountered an error: {ex.Message}");
+                _logger.LogError($"Tracker encountered an error: {ex}");
             }
         }
 
         _logger.LogDebug("Tracker stopping");
+    }
+
+    private async Task TrackUserLocationWithLoggingAsync(User user)
+    {
+        try
+        {
+            await _tourGuideService.TrackUserLocationAsync(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error tracking location for user {user.UserName}: {ex.Message}");
+        }
     }
 }
