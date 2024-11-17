@@ -4,40 +4,51 @@ namespace TripPricer;
 
 public class TripPricer
 {
-    public List<Provider> GetPrice(string apiKey, Guid attractionId, int adults, int children, int nightsStay, int rewardsPoints)
+    public async Task<List<Provider>> GetPriceAsync(string apiKey, Guid attractionId, int adults, int children, int nightsStay, int rewardsPoints)
     {
-        List<Provider> providers = new List<Provider>();
-        HashSet<string> providersUsed = new HashSet<string>();
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new ArgumentException("API Key cannot be null or empty.", nameof(apiKey));
 
-        // Sleep to simulate some latency
-        Thread.Sleep(ThreadLocalRandom.Current.Next(1, 50));
+        List<Provider> providers = new();
+        HashSet<string> providersUsed = new();
+
+        // Simulate latency without blocking the thread
+        await Task.Delay(ThreadLocalRandom.Next(1, 50));
 
         for (int i = 0; i < 5; i++)
         {
-            int multiple = ThreadLocalRandom.Current.Next(100, 700);
+            // Generate random pricing values
+            int multiple = ThreadLocalRandom.Next(100, 700);
             double childrenDiscount = children / 3.0;
             double price = multiple * adults + multiple * childrenDiscount * nightsStay + 0.99 - rewardsPoints;
 
-            if (price < 0.0)
-            {
-                price = 0.0;
-            }
+            // Ensure price does not go below zero
+            price = Math.Max(price, 0.0);
 
+            // Generate a unique provider name
             string provider;
             do
             {
                 provider = GetProviderName(apiKey, adults);
-            } while (providersUsed.Contains(provider));
+            } while (!providersUsed.Add(provider)); // Add to HashSet, avoiding duplicates
 
-            providersUsed.Add(provider);
+            // Add the provider with the calculated price
             providers.Add(new Provider(attractionId, provider, price));
         }
+
         return providers;
     }
 
+    /// <summary>
+    /// Generates a provider name based on a random value.
+    /// </summary>
     public string GetProviderName(string apiKey, int adults)
     {
-        int multiple = ThreadLocalRandom.Current.Next(1, 10);
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new ArgumentException("API Key cannot be null or empty.", nameof(apiKey));
+
+        // Select provider name using a random value
+        int multiple = ThreadLocalRandom.Next(1, 10);
 
         return multiple switch
         {
@@ -51,6 +62,6 @@ public class TripPricer
             8 => "Dancing Waves Cruselines and Partners",
             9 => "AdventureCo",
             _ => "Cure-Your-Blues",
-        };        
+        };
     }
 }
