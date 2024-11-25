@@ -46,16 +46,16 @@ public class TourGuideService : ITourGuideService
 
     public async Task<List<UserReward>> GetUserRewardsAsync(User user)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
         return user.UserRewards;
     }
 
     public async Task<VisitedLocation> GetUserLocationAsync(User user)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
-        return user.VisitedLocations.Any() ? user.GetLastVisitedLocation() : await TrackUserLocationAsync(user);
+        return user.VisitedLocations.Count != 0 ? user.GetLastVisitedLocation() : await TrackUserLocationAsync(user);
     }
 
     public Task<User> GetUserAsync(string userName)
@@ -74,7 +74,7 @@ public class TourGuideService : ITourGuideService
 
     public async Task AddUserAsync(User user)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
         _internalUserMap.TryAdd(user.UserName, user);
 
@@ -83,7 +83,7 @@ public class TourGuideService : ITourGuideService
 
     public async Task<List<Provider>> GetTripDealsAsync(User user)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
 
@@ -103,7 +103,7 @@ public class TourGuideService : ITourGuideService
 
     public async Task<VisitedLocation> TrackUserLocationAsync(User user)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
         var visitedLocation = await _gpsUtil.GetUserLocationAsync(user.UserId);
         user.AddToVisitedLocations(visitedLocation);
@@ -113,7 +113,7 @@ public class TourGuideService : ITourGuideService
 
     public async Task<List<Attraction>> GetNearByAttractionsAsync(VisitedLocation visitedLocation)
     {
-        if (visitedLocation == null) throw new ArgumentNullException(nameof(visitedLocation));
+        ArgumentNullException.ThrowIfNull(visitedLocation);
 
         var attractions = await _gpsUtil.GetAttractionsAsync();
 
