@@ -35,7 +35,7 @@ public class Tracker
             {
                 // Fetch all users asynchronously
                 var users = await _tourGuideService.GetAllUsersAsync();
-                _logger.LogDebug($"Begin Tracker. Tracking {users.Count} users.");
+                _logger.LogDebug("Begin Tracker. Tracking {UserCount} users.", users.Count());
 
                 stopwatch.Start();
 

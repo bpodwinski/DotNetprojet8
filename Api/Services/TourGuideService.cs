@@ -1,7 +1,6 @@
 ﻿using GpsUtil.Location;
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using TourGuide.LibrairiesWrappers.Interfaces;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
@@ -66,10 +65,9 @@ public class TourGuideService : ITourGuideService
         return Task.FromResult(user);
     }
 
-    public async Task<List<User>> GetAllUsersAsync()
+    public Task<IEnumerable<User>> GetAllUsersAsync()
     {
-
-        return await Task.FromResult(_internalUserMap.Values.ToList());
+        return Task.FromResult<IEnumerable<User>>(_internalUserMap.Values);
     }
 
     public async Task AddUserAsync(User user)
@@ -143,15 +141,15 @@ public class TourGuideService : ITourGuideService
 
     private void InitializeInternalUsers()
     {
-        for (int i = 0; i < InternalTestHelper.GetInternalUserNumber(); i++)
+        Parallel.For(0, InternalTestHelper.GetInternalUserNumber(), i =>
         {
             var userName = $"internalUser{i}";
             var user = new User(Guid.NewGuid(), userName, "000", $"{userName}@tourGuide.com");
             GenerateUserLocationHistory(user);
             _internalUserMap.TryAdd(userName, user);
-        }
+        });
 
-        _logger.LogDebug($"Created {InternalTestHelper.GetInternalUserNumber()} internal test users.");
+        _logger.LogDebug("Created {InternalUserCount} internal test users.", InternalTestHelper.GetInternalUserNumber());
     }
 
     private void GenerateUserLocationHistory(User user)
@@ -165,12 +163,12 @@ public class TourGuideService : ITourGuideService
 
     private static readonly Random random = new();
 
-    private double GenerateRandomLongitude()
+    private static double GenerateRandomLongitude()
     {
         return random.NextDouble() * (180 - (-180)) + (-180);
     }
 
-    private double GenerateRandomLatitude()
+    private static double GenerateRandomLatitude()
     {
         return random.NextDouble() * (90 - (-90)) + (-90);
     }
