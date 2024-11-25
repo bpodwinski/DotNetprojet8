@@ -72,10 +72,10 @@ public class TourGuideController : ControllerBase
                 DistanceInMiles = _rewardsService.GetDistance(
                     new Locations(attraction.Latitude, attraction.Longitude),
                     visitedLocation.Location),
-                RewardPoints = _rewardsService.GetRewardPointsAsync(attraction, user) // Méthode synchrone ou remplacez par async si nécessaire
+                RewardPoints = _rewardsService.GetRewardPointsAsync(attraction, user)
             })
-            .OrderBy(attraction => attraction.DistanceInMiles) // Trie par distance
-            .Take(5) // Prend les 5 plus proches
+            .OrderBy(attraction => attraction.DistanceInMiles)
+            .Take(5)
             .ToList();
 
         return Ok(closestAttractions);

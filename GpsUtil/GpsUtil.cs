@@ -8,7 +8,6 @@ public class GpsUtil
 {
     private static readonly SemaphoreSlim rateLimiter = new(100000, 100000);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<VisitedLocation> GetUserLocationAsync(Guid userId)
     {
         await rateLimiter.WaitAsync();
@@ -33,7 +32,6 @@ public class GpsUtil
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<List<Attraction>> GetAttractionsAsync()
     {
         await rateLimiter.WaitAsync();

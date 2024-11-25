@@ -16,7 +16,6 @@ namespace TourGuide.Services
         private readonly IRewardCentral _rewardsCentral;
         private static int count = 0;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RewardsService(IGpsUtil gpsUtil, IRewardCentral rewardCentral)
         {
             _gpsUtil = gpsUtil ?? throw new ArgumentNullException(nameof(gpsUtil));
@@ -24,7 +23,6 @@ namespace TourGuide.Services
             _proximityBuffer = _defaultProximityBuffer;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetProximityBuffer(int proximityBuffer)
         {
             if (proximityBuffer <= 0)
@@ -33,13 +31,11 @@ namespace TourGuide.Services
             _proximityBuffer = proximityBuffer;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDefaultProximityBuffer()
         {
             _proximityBuffer = _defaultProximityBuffer;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task CalculateRewardsAsync(User user)
         {
             if (user == null)
@@ -80,7 +76,6 @@ namespace TourGuide.Services
             });
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsWithinAttractionProximity(Attraction attraction, Locations location)
         {
             if (attraction == null)
@@ -91,7 +86,6 @@ namespace TourGuide.Services
             return GetDistance(attraction, location) <= _attractionProximityRange;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool NearAttraction(VisitedLocation visitedLocation, Attraction attraction)
         {
             if (visitedLocation == null)
@@ -102,7 +96,6 @@ namespace TourGuide.Services
             return GetDistance(attraction, visitedLocation.Location) <= _proximityBuffer;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task<int> GetRewardPointsAsync(Attraction attraction, User user)
         {
             if (attraction == null)
@@ -113,7 +106,6 @@ namespace TourGuide.Services
             return await _rewardsCentral.GetAttractionRewardPointsAsync(attraction.AttractionId, user.UserId);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public double GetDistance(Locations loc1, Locations loc2)
         {
             if (loc1 == null || loc2 == null)

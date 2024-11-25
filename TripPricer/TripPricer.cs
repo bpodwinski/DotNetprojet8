@@ -5,7 +5,6 @@ namespace TripPricer;
 
 public class TripPricer
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task<List<Provider>> GetPriceAsync(string apiKey, Guid attractionId, int adults, int children, int nightsStay, int rewardsPoints)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -41,7 +40,6 @@ public class TripPricer
         return providers;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetProviderName(string apiKey, int adults)
     {
         if (string.IsNullOrWhiteSpace(apiKey))

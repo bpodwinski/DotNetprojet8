@@ -11,7 +11,6 @@ public class TripPricerTask
     private readonly int _nightsStay;
     private readonly int _rewardsPoints;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TripPricerTask(string apiKey, Guid attractionId, int adults, int children, int nightsStay, int rewardsPoints = 5)
     {
         if (string.IsNullOrWhiteSpace(apiKey))

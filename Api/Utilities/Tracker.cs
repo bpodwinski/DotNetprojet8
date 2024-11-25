@@ -26,7 +26,6 @@ public class Tracker
         _cancellationTokenSource.Cancel();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private async Task RunAsync()
     {
         var stopwatch = new Stopwatch();
