@@ -56,17 +56,17 @@ public class TourGuideService : ITourGuideService
 
         return user.VisitedLocations.Count != 0 ? user.GetLastVisitedLocation() : await TrackUserLocationAsync(user);
     }
-
-    public Task<User> GetUserAsync(string userName)
+    public ValueTask<User> GetUserAsync(string userName)
     {
         if (string.IsNullOrEmpty(userName)) throw new ArgumentException("UserName cannot be null or empty.");
 
         _internalUserMap.TryGetValue(userName, out var user);
-        return Task.FromResult(user);
+        return new ValueTask<User>(user);
     }
+
     public IEnumerable<User> GetAllUsersAsync() => _internalUserMap.Values;
 
-    public async Task AddUserAsync(User user)
+    public async ValueTask AddUserAsync(User user)
     {
         ArgumentNullException.ThrowIfNull(user);
 
@@ -81,14 +81,13 @@ public class TourGuideService : ITourGuideService
 
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
 
-        var providers = await Task.Run(() =>
-            _tripPricer.GetPriceAsync(
-                TripPricerApiKey,
-                user.UserId,
-                user.UserPreferences.NumberOfAdults,
-                user.UserPreferences.NumberOfChildren,
-                user.UserPreferences.TripDuration,
-                cumulativeRewardPoints)
+        var providers = await _tripPricer.GetPriceAsync(
+            TripPricerApiKey,
+            user.UserId,
+            user.UserPreferences.NumberOfAdults,
+            user.UserPreferences.NumberOfChildren,
+            user.UserPreferences.TripDuration,
+            cumulativeRewardPoints
         );
 
         user.TripDeals = providers;
@@ -100,13 +99,12 @@ public class TourGuideService : ITourGuideService
         ArgumentNullException.ThrowIfNull(user);
 
         var locationTask = _gpsUtil.GetUserLocationAsync(user.UserId);
-        var visitedLocation = await locationTask;
+        var calculateRewardsTask = Task.Run(() => _rewardsService.CalculateRewardsAsync(user));
 
-        var calculateRewardsTask = _rewardsService.CalculateRewardsAsync(user);
+        var visitedLocation = await locationTask;
         user.AddToVisitedLocations(visitedLocation);
 
         await calculateRewardsTask;
-
         return visitedLocation;
     }
 

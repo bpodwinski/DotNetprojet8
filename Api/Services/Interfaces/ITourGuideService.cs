@@ -9,11 +9,11 @@ namespace TourGuide.Services.Interfaces
     {
         Tracker Tracker { get; }
 
-        Task AddUserAsync(User user);
+        ValueTask AddUserAsync(User user);
         IEnumerable<User> GetAllUsersAsync();
         Task<List<Attraction>> GetNearByAttractionsAsync(VisitedLocation visitedLocation);
         Task<List<Provider>> GetTripDealsAsync(User user);
-        Task<User> GetUserAsync(string userName);
+        ValueTask<User> GetUserAsync(string userName);
         Task<VisitedLocation> GetUserLocationAsync(User user);
         Task<List<UserReward>> GetUserRewardsAsync(User user);
         Task<VisitedLocation> TrackUserLocationAsync(User user);
