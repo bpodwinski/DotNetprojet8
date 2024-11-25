@@ -116,11 +116,7 @@ public class TourGuideService : ITourGuideService
 
         return attractions
             .AsParallel()
-            .Select(attraction => new
-            {
-                Attraction = attraction,
-                Distance = _rewardsService.GetDistance(attraction, visitedLocation.Location)
-            })
+            .Select(attraction => (Attraction: attraction, Distance: _rewardsService.GetDistance(attraction, visitedLocation.Location)))
             .OrderBy(a => a.Distance)
             .Take(5)
             .Select(a => a.Attraction)
@@ -161,12 +157,12 @@ public class TourGuideService : ITourGuideService
 
     private static double GenerateRandomLongitude()
     {
-        return Random.Shared.NextDouble() * (180 - (-180)) + (-180);
+        return Random.Shared.NextDouble() * 360 - 180;
     }
 
     private static double GenerateRandomLatitude()
     {
-        return Random.Shared.NextDouble() * (90 - (-90)) + (-90);
+        return Random.Shared.NextDouble() * 180 - 90;
     }
 
     private static DateTime GetRandomTime()
