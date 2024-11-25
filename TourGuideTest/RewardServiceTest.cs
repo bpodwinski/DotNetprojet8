@@ -44,7 +44,7 @@ namespace TourGuideTest
             await _fixture.InitializeAsync(1);
             _fixture.RewardsService.SetProximityBuffer(int.MaxValue);
 
-            var users = await _fixture.TourGuideService.GetAllUsersAsync();
+            var users = _fixture.TourGuideService.GetAllUsersAsync();
             var user = users.First();
 
             await _fixture.RewardsService.CalculateRewardsAsync(user);

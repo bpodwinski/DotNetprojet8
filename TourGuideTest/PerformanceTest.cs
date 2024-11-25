@@ -26,7 +26,7 @@ namespace TourGuideTest
         {
             await _fixture.InitializeAsync(userCount);
 
-            var allUsers = await _fixture.TourGuideService.GetAllUsersAsync();
+            var allUsers = _fixture.TourGuideService.GetAllUsersAsync();
 
             Stopwatch stopWatch = Stopwatch.StartNew();
 
@@ -55,7 +55,7 @@ namespace TourGuideTest
             var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
             var attraction = attractions.First();
 
-            var allUsers = await _fixture.TourGuideService.GetAllUsersAsync();
+            var allUsers = _fixture.TourGuideService.GetAllUsersAsync();
             Parallel.ForEach(allUsers, user =>
             {
                 user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));

@@ -64,11 +64,7 @@ public class TourGuideService : ITourGuideService
         _internalUserMap.TryGetValue(userName, out var user);
         return Task.FromResult(user);
     }
-
-    public Task<IEnumerable<User>> GetAllUsersAsync()
-    {
-        return Task.FromResult<IEnumerable<User>>(_internalUserMap.Values);
-    }
+    public IEnumerable<User> GetAllUsersAsync() => _internalUserMap.Values;
 
     public async Task AddUserAsync(User user)
     {

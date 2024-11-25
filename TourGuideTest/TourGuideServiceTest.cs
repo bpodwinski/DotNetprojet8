@@ -57,7 +57,7 @@ namespace TourGuideTest
             await _fixture.TourGuideService.AddUserAsync(user);
             await _fixture.TourGuideService.AddUserAsync(user2);
 
-            var allUsers = await _fixture.TourGuideService.GetAllUsersAsync();
+            var allUsers = _fixture.TourGuideService.GetAllUsersAsync();
 
             _fixture.TourGuideService.Tracker.StopTracking();
 
