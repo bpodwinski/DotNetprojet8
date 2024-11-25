@@ -38,8 +38,7 @@ namespace TourGuide.Services
 
         public async Task CalculateRewardsAsync(User user)
         {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
+            ArgumentNullException.ThrowIfNull(user);
 
             count++;
 
@@ -78,30 +77,24 @@ namespace TourGuide.Services
 
         public bool IsWithinAttractionProximity(Attraction attraction, Locations location)
         {
-            if (attraction == null)
-                throw new ArgumentNullException(nameof(attraction));
-            if (location == null)
-                throw new ArgumentNullException(nameof(location));
+            ArgumentNullException.ThrowIfNull(attraction);
+            ArgumentNullException.ThrowIfNull(location);
 
             return GetDistance(attraction, location) <= _attractionProximityRange;
         }
 
         private bool NearAttraction(VisitedLocation visitedLocation, Attraction attraction)
         {
-            if (visitedLocation == null)
-                throw new ArgumentNullException(nameof(visitedLocation));
-            if (attraction == null)
-                throw new ArgumentNullException(nameof(attraction));
+            ArgumentNullException.ThrowIfNull(visitedLocation);
+            ArgumentNullException.ThrowIfNull(attraction);
 
             return GetDistance(attraction, visitedLocation.Location) <= _proximityBuffer;
         }
 
         public async Task<int> GetRewardPointsAsync(Attraction attraction, User user)
         {
-            if (attraction == null)
-                throw new ArgumentNullException(nameof(attraction));
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
+            ArgumentNullException.ThrowIfNull(attraction);
+            ArgumentNullException.ThrowIfNull(user);
 
             return await _rewardsCentral.GetAttractionRewardPointsAsync(attraction.AttractionId, user.UserId);
         }
