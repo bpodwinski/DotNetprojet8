@@ -44,7 +44,7 @@ public class Tracker
                 await Task.WhenAll(trackTasks);
 
                 stopwatch.Stop();
-                _logger.LogDebug($"Tracker Time Elapsed: {stopwatch.ElapsedMilliseconds / 1000.0} seconds.");
+                _logger.LogDebug("Tracker Time Elapsed: {Stopwatch} seconds.", stopwatch.ElapsedMilliseconds / 1000.0);
 
                 stopwatch.Reset();
 
@@ -59,7 +59,7 @@ public class Tracker
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Tracker encountered an error: {ex}");
+                _logger.LogError("Tracker encountered an error: {ex}", ex);
             }
         }
 
