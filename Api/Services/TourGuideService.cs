@@ -1,4 +1,5 @@
 ﻿using GpsUtil.Location;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using TourGuide.LibrairiesWrappers.Interfaces;
@@ -16,7 +17,7 @@ public class TourGuideService : ITourGuideService
     private readonly IRewardsService _rewardsService;
     private readonly TripPricer.TripPricer _tripPricer;
     public Tracker Tracker { get; private set; }
-    private readonly Dictionary<string, User> _internalUserMap = new();
+    private readonly ConcurrentDictionary<string, User> _internalUserMap = new();
     private const string TripPricerApiKey = "test-server-api-key";
     private bool _testMode = true;
 
@@ -75,10 +76,7 @@ public class TourGuideService : ITourGuideService
     {
         if (user == null) throw new ArgumentNullException(nameof(user));
 
-        if (!_internalUserMap.ContainsKey(user.UserName))
-        {
-            _internalUserMap.Add(user.UserName, user);
-        }
+        _internalUserMap.TryAdd(user.UserName, user);
 
         await Task.CompletedTask;
     }
@@ -150,7 +148,7 @@ public class TourGuideService : ITourGuideService
             var userName = $"internalUser{i}";
             var user = new User(Guid.NewGuid(), userName, "000", $"{userName}@tourGuide.com");
             GenerateUserLocationHistory(user);
-            _internalUserMap.Add(userName, user);
+            _internalUserMap.TryAdd(userName, user);
         }
 
         _logger.LogDebug($"Created {InternalTestHelper.GetInternalUserNumber()} internal test users.");

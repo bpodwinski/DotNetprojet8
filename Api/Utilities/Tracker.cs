@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
 
