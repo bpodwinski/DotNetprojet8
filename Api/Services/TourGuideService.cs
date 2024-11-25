@@ -99,9 +99,14 @@ public class TourGuideService : ITourGuideService
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        var visitedLocation = await _gpsUtil.GetUserLocationAsync(user.UserId);
+        var locationTask = _gpsUtil.GetUserLocationAsync(user.UserId);
+        var visitedLocation = await locationTask;
+
+        var calculateRewardsTask = _rewardsService.CalculateRewardsAsync(user);
         user.AddToVisitedLocations(visitedLocation);
-        await _rewardsService.CalculateRewardsAsync(user);
+
+        await calculateRewardsTask;
+
         return visitedLocation;
     }
 
@@ -148,7 +153,7 @@ public class TourGuideService : ITourGuideService
         _logger.LogDebug("Created {InternalUserCount} internal test users.", InternalTestHelper.GetInternalUserNumber());
     }
 
-    private void GenerateUserLocationHistory(User user)
+    private static void GenerateUserLocationHistory(User user)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -157,20 +162,20 @@ public class TourGuideService : ITourGuideService
         }
     }
 
-    private static readonly Random random = new();
+    public static readonly ThreadLocal<Random> ThreadSafeRandom = new(() => new Random());
 
     private static double GenerateRandomLongitude()
     {
-        return random.NextDouble() * (180 - (-180)) + (-180);
+        return Random.Shared.NextDouble() * (180 - (-180)) + (-180);
     }
 
     private static double GenerateRandomLatitude()
     {
-        return random.NextDouble() * (90 - (-90)) + (-90);
+        return Random.Shared.NextDouble() * (90 - (-90)) + (-90);
     }
 
-    private DateTime GetRandomTime()
+    private static DateTime GetRandomTime()
     {
-        return DateTime.UtcNow.AddDays(-random.Next(30));
+        return DateTime.UtcNow.AddDays(-Random.Shared.Next(30));
     }
 }
