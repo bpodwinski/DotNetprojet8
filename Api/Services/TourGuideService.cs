@@ -146,20 +146,17 @@ public class TourGuideService : ITourGuideService
         {
             var userName = $"internalUser{i}";
             var user = new User(Guid.NewGuid(), userName, "000", $"{userName}@tourGuide.com");
-            GenerateUserLocationHistory(user);
+
+            Parallel.For(0, 3, j =>
+            {
+                var visitedLocation = new VisitedLocation(user.UserId, new Locations(GenerateRandomLatitude(), GenerateRandomLongitude()), GetRandomTime());
+                user.AddToVisitedLocations(visitedLocation);
+            });
+
             _internalUserMap.TryAdd(userName, user);
         });
 
         _logger.LogDebug("Created {InternalUserCount} internal test users.", InternalTestHelper.GetInternalUserNumber());
-    }
-
-    private static void GenerateUserLocationHistory(User user)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            var visitedLocation = new VisitedLocation(user.UserId, new Locations(GenerateRandomLatitude(), GenerateRandomLongitude()), GetRandomTime());
-            user.AddToVisitedLocations(visitedLocation);
-        }
     }
 
     public static readonly ThreadLocal<Random> ThreadSafeRandom = new(() => new Random());
