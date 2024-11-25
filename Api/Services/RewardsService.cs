@@ -46,7 +46,8 @@ namespace TourGuide.Services
                 user.UserRewards.Select(r => r.Attraction.AttractionName));
 
             // Snapshot des localisations utilisateur
-            var userLocationsSnapshot = user.VisitedLocations.ToList();
+            //var userLocationsSnapshot = user.VisitedLocations.ToList();
+            var userLocationsSnapshot = user.VisitedLocations.Where(location => location != null).ToList();
 
             // Récupère les attractions de manière asynchrone
             var attractionsSnapshot = await _gpsUtil.GetAttractionsAsync();
