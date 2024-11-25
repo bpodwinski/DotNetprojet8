@@ -3,14 +3,9 @@ using TourGuide.Users;
 
 namespace TourGuideTest
 {
-    public class RewardServiceTest : IClassFixture<DependencyFixture>
+    public class RewardServiceTest(DependencyFixture fixture) : IClassFixture<DependencyFixture>
     {
-        private readonly DependencyFixture _fixture;
-
-        public RewardServiceTest(DependencyFixture fixture)
-        {
-            _fixture = fixture;
-        }
+        private readonly DependencyFixture _fixture = fixture;
 
         [Fact]
         public async Task UserGetRewardsAsync()
@@ -26,7 +21,7 @@ namespace TourGuideTest
             var userRewards = user.UserRewards;
             _fixture.TourGuideService.Tracker.StopTracking();
 
-            Assert.True(userRewards.Count == 1);
+            Assert.Single(userRewards);
         }
 
         [Fact]

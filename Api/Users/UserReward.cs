@@ -15,7 +15,7 @@ public class UserReward
         RewardPoints = rewardPoints;
     }
 
-    public UserReward(VisitedLocation visitedLocation, Attraction attraction) : this(visitedLocation, attraction, 0)
+    public UserReward(VisitedLocation visitedLocation, Attraction attraction, Task<int> rewardPoints) : this(visitedLocation, attraction, 0)
     {
     }
 }

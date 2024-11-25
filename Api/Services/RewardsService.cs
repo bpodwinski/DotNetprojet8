@@ -1,5 +1,4 @@
 ﻿using GpsUtil.Location;
-using System.Runtime.CompilerServices;
 using TourGuide.LibrairiesWrappers.Interfaces;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;

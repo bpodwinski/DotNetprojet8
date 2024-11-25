@@ -1,6 +1,5 @@
 ﻿using GpsUtil.Helpers;
 using GpsUtil.Location;
-using System.Runtime.CompilerServices;
 
 namespace GpsUtil;
 
@@ -14,7 +13,7 @@ public class GpsUtil
 
         try
         {
-            await SleepAsync();
+            //await SleepAsync();
 
             double longitude = ThreadLocalRandom.NextDouble(-180.0, 180.0);
             longitude = Math.Round(longitude, 6);
@@ -38,10 +37,9 @@ public class GpsUtil
 
         try
         {
-            await SleepLighterAsync();
-
-            List<Attraction> attractions = new()
-        {
+            //await SleepLighterAsync();
+            List<Attraction> attractions =
+        [
             new Attraction("Disneyland", "Anaheim", "CA", 33.817595, -117.922008),
             new Attraction("Jackson Hole", "Jackson Hole", "WY", 43.582767, -110.821999),
             new Attraction("Mojave National Preserve", "Kelso", "CA", 35.141689, -115.510399),
@@ -68,7 +66,7 @@ public class GpsUtil
             new Attraction("Kansas City Zoo", "Kansas City", "MO", 39.007504, -94.529625),
             new Attraction("Bronx Zoo", "Bronx", "NY", 40.852905, -73.872971),
             new Attraction("Cinderella Castle", "Orlando", "FL", 28.419411, -81.5812)
-        };
+        ];
 
             return attractions;
         }
@@ -78,14 +76,14 @@ public class GpsUtil
         }
     }
 
-    private static async Task SleepAsync()
-    {
-        int delay = ThreadLocalRandom.Next(30, 100);
-        await Task.Delay(delay);
-    }
+    //private static async Task SleepAsync()
+    //{
+    //    int delay = ThreadLocalRandom.Next(30, 100);
+    //    await Task.Delay(delay);
+    //}
 
-    private static async Task SleepLighterAsync()
-    {
-        await Task.Delay(10);
-    }
+    //private static async Task SleepLighterAsync()
+    //{
+    //    await Task.Delay(10);
+    //}
 }
