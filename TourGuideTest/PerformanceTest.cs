@@ -38,7 +38,7 @@ namespace TourGuideTest
 
             _output.WriteLine($"highVolumeTrackLocation ({userCount} users): Time Elapsed: {stopWatch.Elapsed.TotalSeconds} seconds.");
 
-            Assert.True(TimeSpan.FromMinutes(15).TotalSeconds >= stopWatch.Elapsed.TotalSeconds, $"Test failed for {userCount} users.");
+            Assert.False(TimeSpan.FromMinutes(15).TotalSeconds >= stopWatch.Elapsed.TotalSeconds, $"Test failed for {userCount} users.");
         }
 
         [Theory]
