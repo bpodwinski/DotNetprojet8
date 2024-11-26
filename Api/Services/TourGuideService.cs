@@ -66,14 +66,14 @@ public class TourGuideService : ITourGuideService
 
     public IEnumerable<User> GetAllUsersAsync() => _internalUserMap.Values;
 
-    public async ValueTask AddUserAsync(User user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
+    //public async ValueTask AddUserAsync(User user)
+    //{
+    //    ArgumentNullException.ThrowIfNull(user);
 
-        _internalUserMap.TryAdd(user.UserName, user);
+    //    _internalUserMap.TryAdd(user.UserName, user);
 
-        await Task.CompletedTask;
-    }
+    //    await Task.CompletedTask;
+    //}
 
     public async Task<List<Provider>> GetTripDealsAsync(User user)
     {
