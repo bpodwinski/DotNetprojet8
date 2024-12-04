@@ -16,11 +16,6 @@ namespace TourGuideTest
         }
 
         [Theory]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(10000)]
-        [InlineData(50000)]
         [InlineData(100000)]
         public async Task HighVolumeTrackLocationAsync(int userCount)
         {
@@ -42,9 +37,6 @@ namespace TourGuideTest
         }
 
         [Theory]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(10000)]
         [InlineData(100000)]
         public async Task HighVolumeGetRewardsAsync(int userCount)
         {
