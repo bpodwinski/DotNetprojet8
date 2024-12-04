@@ -16,7 +16,7 @@ namespace TourGuideTest
         }
 
         [Theory]
-        [InlineData(10)]
+        [InlineData(100)]
         [InlineData(1000)]
         [InlineData(5000)]
         [InlineData(10000)]
