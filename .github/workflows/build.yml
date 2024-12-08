@@ -35,8 +35,31 @@ jobs:
       - name: Publish artifacts
         run: dotnet publish -c Release -o ./publish
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+      - name: Create lightweight tag
+        run: |
+          TAG_NAME="auto-release-$(date +'%Y%m%d%H%M%S')"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
         with:
-          name: dotnet-build-artifacts
-          path: ./publish
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Release ${{ env.TAG_NAME }}
+          body: |
+            Nouveau build généré automatiquement pour la branche `${{ github.ref_name }}`.
+            Contient les binaires pour cette version.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish
+          asset_name: build-artifacts.zip
+          asset_content_type: application/zip
