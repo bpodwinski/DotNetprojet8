@@ -35,12 +35,17 @@ jobs:
       - name: Publish artifacts
         run: dotnet publish -c Release -o ./publish
 
+      - name: Configure Git user
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
       - name: Create lightweight tag
         run: |
           TAG_NAME="auto-release-$(date +'%Y%m%d%H%M%S')"
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $TAG_NAME
 
       - name: Create GitHub Release
         id: create_release
