@@ -38,37 +38,42 @@ namespace TourGuide.Services
         public async Task CalculateRewardsAsync(User user)
         {
             ArgumentNullException.ThrowIfNull(user);
-
             count++;
 
-            // Capture les attractions déjà récompensées
+            // Capture les noms des attractions déjà récompensées dans un HashSet
             var rewardedAttractions = new HashSet<string>(
                 user.UserRewards.Select(r => r.Attraction.AttractionName));
 
-            // Snapshot des localisations utilisateur
-            //var userLocationsSnapshot = user.VisitedLocations.ToList();
-            var userLocationsSnapshot = user.VisitedLocations.Where(location => location != null).ToList();
+            // Filtre et capture les localisations visitées de l'user
+            var userLocationsSnapshot = user.VisitedLocations
+                .Where(location => location != null)
+                .ToList();
 
-            // Récupère les attractions de manière asynchrone
             var attractionsSnapshot = await _gpsUtil.GetAttractionsAsync();
 
-            // Utilisation de Parallel.ForEachAsync (C# 7.0+)
+            // Traite les localisations
             await Parallel.ForEachAsync(userLocationsSnapshot, async (visitedLocation, _) =>
             {
-                // Filtre les attractions proches et non récompensées
+                // Filtre attractions :
+                // - Proches de la localisation visitée
+                // - Non récompensées
                 var nearbyAttractions = attractionsSnapshot
-                    .Where(attraction => !rewardedAttractions.Contains(attraction.AttractionName) &&
-                                         NearAttraction(visitedLocation, attraction));
+                    .Where(attraction =>
+                        !rewardedAttractions.Contains(attraction.AttractionName) &&
+                        NearAttraction(visitedLocation, attraction));
 
+                // Traite les attractions proches pour ajouter des récompenses
                 foreach (var attraction in nearbyAttractions)
                 {
-                    // Calcul des points de récompense de manière asynchrone
                     var rewardPoints = await GetRewardPointsAsync(attraction, user);
 
+                    // Lock pour éviter les accès concurrents à la liste des récompenses
                     lock (user.UserRewards)
                     {
-                        // Ajoute la récompense à l'utilisateur
+                        // Nouvelle récompense
                         user.AddUserReward(new UserReward(visitedLocation, attraction, rewardPoints));
+
+                        // Ajoute l'attraction au HashSet pour éviter de traiter plusieurs fois la même attraction
                         rewardedAttractions.Add(attraction.AttractionName);
                     }
                 }
