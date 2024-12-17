@@ -1,4 +1,9 @@
-﻿using TourGuide.LibrairiesWrappers.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TourGuide.LibrairiesWrappers.Interfaces;
 using TourGuide.Services.Interfaces;
 using TourGuide.Services;
 using TourGuide.LibrairiesWrappers;
@@ -11,21 +16,20 @@ namespace TourGuideTest
     {
         public DependencyFixture()
         {
-            Task.Run(() => InitializeAsync()).GetAwaiter().GetResult();
+            Initialize();            
         }
 
-        public async Task CleanupAsync()
-        {
-            await InitializeAsync();
+        public void Cleanup()
+        {           
+            Initialize();
         }
 
-        public async Task InitializeAsync(int internalUserNumber = 100)
+        public void Initialize(int internalUserNumber = 100)
         {
             var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
             });
-
             var tourGuideLogger = loggerFactory.CreateLogger<TourGuideService>();
 
             InternalTestHelper.SetInternalUserNumber(internalUserNumber);
@@ -34,8 +38,6 @@ namespace TourGuideTest
             GpsUtil = new GpsUtilWrapper();
             RewardsService = new RewardsService(GpsUtil, RewardCentral);
             TourGuideService = new TourGuideService(tourGuideLogger, GpsUtil, RewardsService, loggerFactory);
-
-            await Task.CompletedTask; // Placeholder si une logique asynchrone est nécessaire à l'avenir
         }
 
         public IRewardCentral RewardCentral { get; set; }
