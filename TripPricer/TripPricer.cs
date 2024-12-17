@@ -16,7 +16,7 @@ public class TripPricer
         // Simulate latency without blocking the thread
         await Task.Delay(ThreadLocalRandom.Next(1, 50));
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 10; i++)
         {
             // Generate random pricing values
             int multiple = ThreadLocalRandom.Next(100, 700);
@@ -46,7 +46,7 @@ public class TripPricer
             throw new ArgumentException("API Key cannot be null or empty.", nameof(apiKey));
 
         // Select provider name using a random value
-        int multiple = ThreadLocalRandom.Next(1, 10);
+        int multiple = ThreadLocalRandom.Next(1, 11);
 
         return multiple switch
         {
