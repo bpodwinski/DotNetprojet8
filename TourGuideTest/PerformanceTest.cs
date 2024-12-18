@@ -40,7 +40,7 @@ namespace TourGuideTest
         public void HighVolumeTrackLocation()
         {
             //On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(100000);
+            _fixture.Initialize(110000);
 
             var allUsers = _fixture.TourGuideService.GetAllUsersAsync();
 
@@ -71,6 +71,7 @@ namespace TourGuideTest
             var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
             List<User> allUsers = _fixture.TourGuideService.GetAllUsersAsync().ToList();
             allUsers.ForEach(u => u.AddToVisitedLocations(new VisitedLocation(u.UserId, attractions[0], DateTime.Now)));
+
             var tasks = new List<Task>();
             foreach (var user in allUsers)
             {
